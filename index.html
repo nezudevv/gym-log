@@ -55,7 +55,19 @@
   input[type="date"] { width: auto; min-width: 150px; }
   textarea { min-height: 70px; resize: vertical; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
-  .ex-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .ex-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .ex-title { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .thumb { flex: none; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: #fff; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  dialog { border: 0; padding: 0; border-radius: 16px; width: min(92vw, 480px); max-height: 88vh; background: var(--card); color: var(--text); }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  .dlg-img { background: #fff; display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }
+  .dlg-body { padding: 14px 16px 16px; overflow: auto; }
+  .dlg-body h2 { margin: 0 0 8px; font-size: 19px; }
+  .dlg-body ol { margin: 0 0 10px; padding-left: 20px; }
+  .dlg-body li { margin-bottom: 5px; }
+  .credit { font-size: 12px; color: var(--muted); }
+  .close { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 20px; line-height: 1; }
   .ex-name { font-weight: 650; }
   .ex-target { color: var(--muted); font-size: 14px; white-space: nowrap; }
   .last { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
@@ -195,8 +207,19 @@
   </div>
 </div>
 
+<dialog id="exDialog" aria-labelledby="dlgName">
+  <button class="close" id="dlgClose" type="button" aria-label="Close">×</button>
+  <img class="dlg-img" id="dlgImg" alt="">
+  <div class="dlg-body">
+    <h2 id="dlgName"></h2>
+    <ol id="dlgHow"></ol>
+    <p class="credit">Image: <span id="dlgBy"></span>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>. Recolored. <a href="images/CREDITS.md" target="_blank" rel="noopener">Credits</a></p>
+  </div>
+</dialog>
+
 <script>
 const REPO = "nezudevv/workout";
+const EX = {"glute-bridge": {"name": "Glute Bridge", "how": ["Lie on your back with knees bent, feet flat on the floor and hip-width apart.", "Push through your heels and lift your hips until your shoulders, hips and knees form a straight line.", "Squeeze your glutes for 1 second at the top.", "Lower slowly back to the floor."], "by": "Bryl Lim, based on Everkinetic"}, "single-leg-glute-bridge": {"name": "Single-Leg Glute Bridge", "how": ["Set up like a glute bridge: on your back, knees bent, feet flat.", "Straighten one leg so both thighs stay level.", "Push through the planted heel and lift your hips until your body forms a straight line.", "Keep your hips level the whole time, then lower slowly.", "Do all reps on one side, then switch."], "by": "Bryl Lim"}, "hip-thrust": {"name": "Hip Thrust", "how": ["Sit on the floor with your upper back (just below the shoulder blades) against the edge of a bench, knees bent and feet flat.", "If using a barbell, roll it over your hips with a pad under it.", "Drive through your heels and lift your hips until your thighs are parallel to the floor.", "Keep your chin tucked and ribs down, with no arch in your lower back.", "Squeeze your glutes at the top, then lower under control."], "by": "Bryl Lim"}, "goblet-squat": {"name": "Goblet Squat", "how": ["Hold a dumbbell or kettlebell upright against your chest, elbows pointing down.", "Stand with feet slightly wider than hips, toes turned slightly out.", "Sit down between your heels, keeping your chest up and knees tracking over your toes.", "Go as deep as you can while keeping your back flat.", "Stand up by pushing through your heels."], "by": "Bryl Lim"}, "bodyweight-squat": {"name": "Bodyweight Squat", "how": ["Stand with feet slightly wider than hips, toes turned slightly out.", "Reach your arms forward for balance.", "Sit down between your heels, chest up, knees tracking over your toes.", "Stand up by pushing through your heels."], "by": "Bryl Lim"}, "romanian-deadlift": {"name": "Romanian Deadlift", "how": ["Stand holding the weights in front of your thighs, knees slightly bent.", "Push your hips back and let the weights slide down your legs, keeping your back flat.", "Stop when you feel a strong stretch in your hamstrings, usually around mid-shin.", "Drive your hips forward to stand up, squeezing your glutes at the top."], "by": "Bryl Lim"}, "split-squat": {"name": "Split Squat", "how": ["Take a long stance with one foot forward and the back heel lifted.", "Keep your torso tall.", "Lower your back knee straight down toward the floor.", "Push up through your front heel.", "Do all reps on one side, then switch."], "by": "Bryl Lim"}, "bulgarian-split-squat": {"name": "Bulgarian Split Squat", "how": ["Stand about two feet in front of a bench and rest the top of your back foot on it.", "Lower your back knee toward the floor.", "Lean your torso slightly forward to put more work on your glutes.", "Push up through your front heel.", "Do all reps on one side, then switch."], "by": "Bryl Lim"}, "reverse-lunge": {"name": "Reverse Lunge", "how": ["Stand tall with feet hip-width apart.", "Step one foot back.", "Lower until both knees are bent about 90°.", "Push through your front heel to return to standing."], "by": "Bryl Lim, based on Everkinetic"}, "step-up": {"name": "Step-Up", "how": ["Put one foot on a box or bench at knee height or lower.", "Lean slightly forward and drive through that heel to stand up on the box.", "Don't push off the back foot; let the top leg do the work.", "Lower slowly back down.", "Do all reps on one side, then switch."], "by": "Bryl Lim, based on Everkinetic"}, "sumo-deadlift": {"name": "Sumo Deadlift", "how": ["Stand with a wide stance, toes pointed out, the weight between your feet.", "Bend down with hips low, chest up and back flat. Grip the weight with hands inside your knees.", "Push the floor away and push your knees out as you stand.", "Squeeze your glutes at the top, standing tall without leaning back.", "Lower with control."], "by": "Bryl Lim"}, "cable-pull-through": {"name": "Cable Pull-Through", "how": ["Attach a rope to a low cable. Face away from the machine with the rope between your legs, then walk forward a couple of steps.", "Stand with feet slightly wider than hips.", "Hinge your hips back with arms straight, letting the rope pull between your legs.", "Drive your hips forward and squeeze your glutes to stand tall."], "by": "Bryl Lim"}, "back-extension": {"name": "Back Extension", "how": ["Set up on a 45° back extension bench with the pad just below your hip bones so you can bend at the hips.", "Cross your arms over your chest.", "Lower your torso with a flat back.", "Lift back up to a straight line, squeezing your glutes. Don't over-arch."], "by": "Bryl Lim"}, "hip-abduction-machine": {"name": "Hip Abduction Machine", "how": ["Sit with your back against the pad and the pads on the outside of your knees.", "Push your knees outward as far as is comfortable.", "Pause for 1 second.", "Return slowly without letting the weight stack touch down.", "Leaning slightly forward works the upper glutes more."], "by": "Bryl Lim"}, "banded-lateral-walk": {"name": "Banded Lateral Walk (Side Steps)", "how": ["Place a mini band around your thighs (easier) or ankles (harder).", "Get into a quarter squat with feet hip-width apart.", "Step to the side, then bring the other foot in only partway so the band stays tight.", "Keep your toes forward and hips level. Do the same number of steps each way."], "by": "Bryl Lim"}, "one-arm-dumbbell-row": {"name": "One-Arm Dumbbell Row", "how": ["Put one knee and the same-side hand on a bench, other foot on the floor.", "Keep your back flat.", "Pull the dumbbell toward your hip, keeping your elbow close to your body.", "Lower slowly. Do all reps on one side, then switch."], "by": "Bryl Lim"}, "lat-pulldown": {"name": "Lat Pulldown", "how": ["Adjust the thigh pad so your legs are locked in.", "Grip the bar slightly wider than your shoulders.", "Keep your chest up and lean back slightly.", "Pull the bar to your upper chest, leading with your elbows.", "Control the bar on the way back up."], "by": "Bryl Lim, based on Everkinetic"}, "incline-push-up": {"name": "Incline Push-Up", "how": ["Put your hands on the edge of a bench, slightly wider than your shoulders.", "Keep your body in a straight line from head to heels, glutes squeezed.", "Lower your chest to the edge of the bench, elbows angled back about 45°.", "Push away to return.", "Use a lower surface as you get stronger."], "by": "Bryl Lim"}, "plank": {"name": "Plank", "how": ["Rest on your forearms with elbows under your shoulders.", "Straighten your legs and balance on your toes.", "Keep your body in a straight line from head to heels.", "Squeeze your glutes, brace your stomach and keep breathing."], "by": "Bryl Lim"}, "dead-bug": {"name": "Dead Bug", "how": ["Lie on your back with arms pointing to the ceiling and knees bent 90° above your hips.", "Press your lower back into the floor.", "Slowly lower your opposite arm and leg toward the floor.", "Return to the start and switch sides."], "by": "Bryl Lim"}};
 const PLAN = {"1": {"1": [["glute-bridge", "Glute bridges", "3 × 15"], ["goblet-squat", "Goblet squats", "3 × 10"], ["romanian-deadlift", "Dumbbell Romanian deadlifts", "3 × 10"], ["one-arm-dumbbell-row", "One-arm dumbbell rows", "3 × 10 each"], ["plank", "Plank", "3 × 20–30 sec"]], "2": [["hip-thrust", "Hip thrusts (bodyweight or light)", "3 × 12"], ["step-up", "Step-ups", "3 × 10 each leg"], ["back-extension", "Back extensions", "3 × 12"], ["lat-pulldown", "Lat pulldowns", "3 × 12"], ["dead-bug", "Dead bugs", "3 × 10"]], "3": [["single-leg-glute-bridge", "Single-leg glute bridges", "3 × 10 each"], ["split-squat", "Split squats", "3 × 8 each leg"], ["cable-pull-through", "Cable pull-throughs", "3 × 12"], ["incline-push-up", "Incline push-ups", "3 × 8"], ["hip-abduction-machine", "Hip abduction machine", "3 × 15"]]}, "2": {"1": [["hip-thrust", "Barbell hip thrusts", "4 × 8–10"], ["goblet-squat", "Goblet squats", "3 × 10"], ["romanian-deadlift", "Romanian deadlifts (heavier)", "3 × 10"], ["one-arm-dumbbell-row", "One-arm dumbbell rows", "3 × 10 each"], ["plank", "Plank", "3 × 30–40 sec"], ["banded-lateral-walk", "Finisher: banded lateral walks", "2 × 20"]], "2": [["hip-thrust", "Barbell hip thrusts (lighter)", "3 × 12"], ["step-up", "Step-ups (with dumbbells)", "3 × 10 each leg"], ["back-extension", "Back extensions", "3 × 12"], ["lat-pulldown", "Lat pulldowns", "3 × 12"], ["dead-bug", "Dead bugs", "3 × 12"], ["hip-abduction-machine", "Finisher: hip abductions", "2 × 20"]], "3": [["single-leg-glute-bridge", "Single-leg glute bridges", "3 × 12 each"], ["bulgarian-split-squat", "Bulgarian split squats", "3 × 8 each leg"], ["cable-pull-through", "Cable pull-throughs", "3 × 12"], ["incline-push-up", "Incline push-ups", "3 × 10"], ["hip-abduction-machine", "Hip abduction machine", "3 × 15"], ["banded-lateral-walk", "Finisher: banded lateral walks", "2 × 20"]]}, "3": {"1": [["hip-thrust", "Barbell hip thrusts (heavy)", "4 × 6–8, then 1 × 20 light"], ["goblet-squat", "Goblet squats", "3 × 10"], ["reverse-lunge", "Reverse lunges", "3 × 10 each leg"], ["romanian-deadlift", "Romanian deadlifts", "3 × 8"], ["one-arm-dumbbell-row", "One-arm dumbbell rows", "3 × 10 each"], ["banded-lateral-walk", "Finisher: banded lateral walks", "2–3 × 20"]], "2": [["hip-thrust", "Barbell hip thrusts (moderate)", "3 × 10"], ["step-up", "Step-ups (with dumbbells)", "3 × 10 each leg"], ["back-extension", "Back extensions (holding a weight)", "3 × 12"], ["lat-pulldown", "Lat pulldowns", "3 × 10"], ["dead-bug", "Dead bugs", "3 × 12"], ["hip-abduction-machine", "Finisher: hip abductions", "2–3 × 20"]], "3": [["sumo-deadlift", "Sumo deadlifts", "3 × 8"], ["bulgarian-split-squat", "Bulgarian split squats", "3 × 8 each leg"], ["single-leg-glute-bridge", "Single-leg glute bridges", "3 × 12 each"], ["cable-pull-through", "Cable pull-throughs", "3 × 12"], ["incline-push-up", "Incline push-ups (lower incline)", "3 × 10"], ["banded-lateral-walk", "Finisher: banded lateral walks", "2–3 × 20"]]}};
 const API = "https://api.github.com";
 const K = "gymlog.";
@@ -269,7 +292,7 @@ function renderExercises() {
     const card = document.createElement("div");
     card.className = "card";
     card.dataset.i = i;
-    let html = `<div class="ex-head"><span class="ex-name"></span><span class="ex-target"></span></div>`;
+    let html = `<div class="ex-head"><button class="thumb" type="button" data-ex="${slug}" aria-label="Show how to do it"><img src="images/${slug}.jpg" alt="" loading="lazy"></button><div class="ex-title"><span class="ex-name"></span><span class="ex-target"></span></div></div>`;
     if (prev) html += `<div class="last"></div>`;
     html += `<div class="sets">`;
     targets.forEach((t, s) => {
@@ -509,6 +532,22 @@ $("saveToken").addEventListener("click", async () => {
   showApp(); renderExercises();
 });
 $("forgetToken").addEventListener("click", () => { store.del("token"); showSetup(true); });
+
+// ---------- exercise pop-up ----------
+const dlg = $("exDialog");
+$("exercises").addEventListener("click", e => {
+  const b = e.target.closest(".thumb"); if (!b) return;
+  const x = EX[b.dataset.ex];
+  $("dlgImg").src = `images/${b.dataset.ex}.jpg`;
+  $("dlgImg").alt = x.name;
+  $("dlgName").textContent = x.name;
+  $("dlgBy").textContent = x.by;
+  const ol = $("dlgHow"); ol.innerHTML = "";
+  x.how.forEach(s => { const li = document.createElement("li"); li.textContent = s; ol.append(li); });
+  dlg.showModal();
+});
+$("dlgClose").addEventListener("click", () => dlg.close());
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
 // ---------- start ----------
 const paintPhase = seg("phase", state.phase, v => { state.phase = v; store.set("phase", v); renderExercises(); });
